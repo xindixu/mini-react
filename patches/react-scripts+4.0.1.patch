@@ -1,0 +1,13 @@
+diff --git a/node_modules/react-scripts/config/webpack.config.js b/node_modules/react-scripts/config/webpack.config.js
+index eddca1b..35f5648 100644
+--- a/node_modules/react-scripts/config/webpack.config.js
++++ b/node_modules/react-scripts/config/webpack.config.js
+@@ -757,6 +757,8 @@ module.exports = function (webpackEnv) {
+         eslintPath: require.resolve('eslint'),
+         context: paths.appSrc,
+         cache: true,
++        failOnError: false,
++        emitWarning: true, 
+         // ESLint class options
+         cwd: paths.appPath,
+         resolvePluginsRelativeTo: __dirname,
