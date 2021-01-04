@@ -1,17 +1,34 @@
-import React from "react";
-import ReactDOM from "react-dom";
+import React, { Component } from "./x-react";
+import ReactDOM from "./x-react-dom";
+
 import "./index.css";
 import App from "./App";
-import reportWebVitals from "./reportWebVitals";
 
-ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById("root")
+const Frc = ({ name }) => (
+  <div className="border-red">
+    functional component
+    <p>{name}</p>
+  </div>
 );
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+// eslint-disable-next-line react/prefer-stateless-function
+class Crc extends Component {
+  render() {
+    return (
+      <div className="border-red">
+        class component
+        <p>{this.props.name}</p>
+      </div>
+    );
+  }
+}
+
+ReactDOM.render(
+  <div className="border-red">
+    <h1>React</h1>
+    <p>is pretty cool</p>
+    <Frc name="react function component" />
+    <Crc name="react class component" />
+  </div>,
+  document.getElementById("root")
+);
