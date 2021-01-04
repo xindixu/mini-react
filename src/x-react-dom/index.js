@@ -55,11 +55,19 @@ function updateClassComponent(vnode) {
   return createNode(child);
 }
 
+function updateFragmentComponent(vnode) {
+  const { props } = vnode;
+  const node = document.createDocumentFragment();
+  reconcileChildren(node, props.children);
+  return node;
+}
+
 function createNode(vnode) {
   const { type } = vnode;
   if (typeof type === "string") {
     return updateHostComponent(vnode);
   }
+
   if (isStringOrNumber(vnode)) {
     return updateTextComponent(vnode);
   }
@@ -69,6 +77,8 @@ function createNode(vnode) {
       ? updateClassComponent(vnode)
       : updateFunctionComponent(vnode);
   }
+
+  return updateFragmentComponent(vnode);
 }
 
 /** create DOM node

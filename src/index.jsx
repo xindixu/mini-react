@@ -1,4 +1,4 @@
-import React, { Component } from "./x-react";
+import { Component } from "./x-react";
 import ReactDOM from "./x-react-dom";
 
 import "./index.css";
@@ -23,12 +23,20 @@ class Crc extends Component {
   }
 }
 
+const fragment = (
+  <>
+    <li>hah</li>
+    <li>hah</li>
+  </>
+);
+
 ReactDOM.render(
   <div className="border-red">
     <h1>React</h1>
     <p>is pretty cool</p>
     <Frc name="react function component" />
     <Crc name="react class component" />
+    <ul>{fragment}</ul>
   </div>,
   document.getElementById("root")
 );
