@@ -26,7 +26,6 @@ function reconcileChildren(workInProgress, children) {
 
   const newChildren = Array.isArray(children) ? children : [children];
 
-  console.log(newChildren);
   let previousNewFiber = null;
   // Process children in order
   newChildren.forEach((child, index) => {
@@ -88,7 +87,12 @@ function updateFunctionComponent(workInProgress) {
   reconcileChildren(workInProgress, child);
 }
 
-function updateClassComponent(workInProgress) {}
+function updateClassComponent(workInProgress) {
+  const { type, props } = workInProgress;
+  const instance = new type(props);
+  const child = instance.render();
+  reconcileChildren(workInProgress, child);
+}
 
 function updateFragmentComponent(workInProgress) {
   reconcileChildren(workInProgress, workInProgress.props.children);

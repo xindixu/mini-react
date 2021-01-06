@@ -34,7 +34,7 @@ ReactDOM.render(
     <h1>React</h1>
     <p>is pretty cool</p>
     <Frc name="react function component" />
-    {/* <Crc name="react class component" /> */}
+    <Crc name="react class component" />
     <ul>{fragment}</ul>
   </div>,
   document.getElementById("root")
