@@ -1,2 +1,2 @@
-export { default } from "./vdom";
-// export { default } from "./fiber";
+// export { default } from "./vdom";
+export { default } from "./fiber";

@@ -5,7 +5,7 @@ import "./index.css";
 
 const Frc = ({ name }) => (
   <div className="border-red">
-    functional component
+    <h2>functional component</h2>
     <p>{name}</p>
   </div>
 );
@@ -15,7 +15,7 @@ class Crc extends Component {
   render() {
     return (
       <div className="border-red">
-        class component
+        <h2>class component</h2>
         <p>{this.props.name}</p>
       </div>
     );
@@ -33,9 +33,9 @@ ReactDOM.render(
   <div className="border-red">
     <h1>React</h1>
     <p>is pretty cool</p>
-    {/* <Frc name="react function component" />
-    <Crc name="react class component" />
-    <ul>{fragment}</ul> */}
+    <Frc name="react function component" />
+    {/* <Crc name="react class component" /> */}
+    <ul>{fragment}</ul>
   </div>,
   document.getElementById("root")
 );
