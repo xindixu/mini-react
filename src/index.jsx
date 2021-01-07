@@ -9,7 +9,7 @@ const Frc = ({ name }) => {
     <div className="border-red">
       <h2>functional component</h2>
       <p>{name}</p>
-      <button type="button" onClick={() => setCount(count + 1)}>
+      <button type="button" onClick={() => setCount(count + 10)}>
         Add
       </button>
       <p>{count}</p>

@@ -16,13 +16,20 @@ import { Deletion, Placement, Update } from "./const";
     index: current position the current level
  */
 
-let wipRoot = null; // fiber | null
-let currentRoot = null; // fiber | null
-// next task that need to update (fiber)
-let nextUnitOfWork = null; // fiber | null
+const w = window;
+// `render` will initiate first task
+w.nextUnitOfWork = null;
+w.wipRoot = null; // fiber | null
+// root that got interrupted
+w.currentRoot = null; // fiber | null
+// functional components related
+w.wipFiber = null;
+w.hookIndex = null;
+
+w.deletions = null;
 
 function reconcileChildren(returnFiber, children) {
-  // Filter out text node and process in `updateNodeAttributes`
+  // Filter out text node and process in `updateNode`
   if (isStringOrNumber(children)) {
     return;
   }
@@ -34,20 +41,28 @@ function reconcileChildren(returnFiber, children) {
   let previousNewFiber = null;
   // Process children in order
   newChildren.forEach((child, index) => {
-    const same =
-      child &&
-      oldFiber &&
-      child.type === oldFiber.type &&
-      child.key === oldFiber.key;
+    const same = child && oldFiber && child.type === oldFiber.type;
+    // child.key === oldFiber.key;
 
-    let newFiber;
+    let newFiber = null;
     if (same) {
       // Update
+      newFiber = {
+        key: child.key || null,
+        type: child.type,
+        props: { ...child.props },
+        child: null, // fiber | null
+        sibling: null, // fiber | null
+        return: returnFiber, // fiber | null
+        stateNode: oldFiber.stateNode, // DOM node for host tags,
+        alternate: oldFiber, // last old fiber
+        flags: Update,
+      };
     }
     if (!same && child) {
       // Create
       newFiber = {
-        key: null,
+        key: child.key || null,
         type: child.type,
         props: { ...child.props },
         child: null, // fiber | null
@@ -67,6 +82,7 @@ function reconcileChildren(returnFiber, children) {
       oldFiber = oldFiber.sibling;
     }
 
+    // Create fiber structure
     if (index === 0) {
       returnFiber.child = newFiber;
     } else {
@@ -78,7 +94,7 @@ function reconcileChildren(returnFiber, children) {
 }
 
 // ============= Updaters =============
-function updateNodeAttributes(node, attrs) {
+function updateNode(node, attrs) {
   Object.keys(attrs)
     // .filter((k) => k !== "children")
     .forEach((k) => {
@@ -99,7 +115,7 @@ function updateNodeAttributes(node, attrs) {
 function createNode(workInProgress) {
   const { type, props } = workInProgress;
   const node = document.createElement(type);
-  updateNodeAttributes(node, props);
+  updateNode(node, props);
   return node;
 }
 
@@ -113,6 +129,10 @@ function updateHostComponent(workInProgress) {
 }
 
 function updateFunctionComponent(workInProgress) {
+  w.wipFiber = workInProgress;
+  w.wipFiber.hooks = [];
+  w.wipFiber.hookIndex = 0;
+
   const { type, props } = workInProgress;
   const child = type(props);
   reconcileChildren(workInProgress, child);
@@ -207,6 +227,7 @@ function commitWorker(workInProgress) {
     parentNode.appendChild(workInProgress.stateNode);
   } else if (workInProgress.flags & Update && workInProgress.stateNode) {
     // Update
+    updateNode(workInProgress.stateNode, workInProgress.props);
   } else if (workInProgress.flags & Deletion && workInProgress.stateNode) {
     // Delete
   }
@@ -218,24 +239,24 @@ function commitWorker(workInProgress) {
 }
 
 function commitRoot() {
-  commitWorker(wipRoot.child);
-  currentRoot = wipRoot;
-  wipRoot = null;
+  commitWorker(w.wipRoot.child);
+  w.currentRoot = w.wipRoot;
+  w.wipRoot = null;
 }
 
 function workLoop(IdleDeadline) {
   // idle time left
-  while (nextUnitOfWork && IdleDeadline.timeRemaining() > 1) {
+  while (w.nextUnitOfWork && IdleDeadline.timeRemaining() > 1) {
     // TODO: check priority, check time slot
-    nextUnitOfWork = performUnitOfWork(nextUnitOfWork);
+    w.nextUnitOfWork = performUnitOfWork(w.nextUnitOfWork);
   }
 
   // Spy on the idle time and run task whenever there's idle time
-  window.requestIdleCallback(workLoop);
-  if (!nextUnitOfWork && wipRoot) {
+  if (!w.nextUnitOfWork && w.wipRoot) {
     // commit task: update vdom to dom
     commitRoot();
   }
+  window.requestIdleCallback(workLoop);
 }
 
 window.requestIdleCallback(workLoop);
@@ -245,13 +266,13 @@ window.requestIdleCallback(workLoop);
  * @param  {} container real dom noe
  */
 function render(vnode, container) {
-  wipRoot = {
+  w.wipRoot = {
     type: "div",
     props: { children: { ...vnode } },
     stateNode: container,
   };
 
-  nextUnitOfWork = wipRoot;
+  w.nextUnitOfWork = w.wipRoot;
 }
 
 export default { render };
