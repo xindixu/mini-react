@@ -94,20 +94,34 @@ function reconcileChildren(returnFiber, children) {
 }
 
 // ============= Updaters =============
-function updateNode(node, attrs) {
-  Object.keys(attrs)
+function updateNode(node, prevAttrs, nextAttrs) {
+  Object.keys(prevAttrs).forEach((k) => {
+    if (k === "children") {
+      // textNode
+      if (isStringOrNumber(prevAttrs[k])) {
+        node.textContent = "";
+      }
+    } else if (k.slice(0, 2) === "on") {
+      const eventName = k.slice(2).toLocaleLowerCase();
+      node.removeEventListener(eventName, prevAttrs[k]);
+    } else if (!(k in nextAttrs)) {
+      node.removeAttribute(k);
+    }
+  });
+
+  Object.keys(nextAttrs)
     // .filter((k) => k !== "children")
     .forEach((k) => {
       if (k === "children") {
         // textNode
-        if (isStringOrNumber(attrs[k])) {
-          node.textContent = `${attrs[k]}`;
+        if (isStringOrNumber(nextAttrs[k])) {
+          node.textContent = `${nextAttrs[k]}`;
         }
       } else if (k.slice(0, 2) === "on") {
         const eventName = k.slice(2).toLocaleLowerCase();
-        node.addEventListener(eventName, attrs[k]);
+        node.addEventListener(eventName, nextAttrs[k]);
       } else {
-        node[k] = attrs[k];
+        node[k] = nextAttrs[k];
       }
     });
 }
@@ -115,7 +129,7 @@ function updateNode(node, attrs) {
 function createNode(workInProgress) {
   const { type, props } = workInProgress;
   const node = document.createElement(type);
-  updateNode(node, props);
+  updateNode(node, {}, props);
   return node;
 }
 
@@ -227,7 +241,11 @@ function commitWorker(workInProgress) {
     parentNode.appendChild(workInProgress.stateNode);
   } else if (workInProgress.flags & Update && workInProgress.stateNode) {
     // Update
-    updateNode(workInProgress.stateNode, workInProgress.props);
+    updateNode(
+      workInProgress.stateNode,
+      workInProgress.alternate.props,
+      workInProgress.props
+    );
   } else if (workInProgress.flags & Deletion && workInProgress.stateNode) {
     // Delete
   }
