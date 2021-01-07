@@ -26,7 +26,7 @@ w.currentRoot = null; // fiber | null
 w.wipFiber = null;
 w.hookIndex = null;
 
-w.deletions = null;
+w.deletions = [];
 
 function reconcileChildren(returnFiber, children) {
   // Filter out text node and process in `updateNode`
@@ -76,6 +76,8 @@ function reconcileChildren(returnFiber, children) {
 
     if (!same && oldFiber) {
       // Delete
+      oldFiber.flags = Deletion;
+      w.deletions.push(oldFiber);
     }
 
     if (oldFiber) {
@@ -222,6 +224,15 @@ function performUnitOfWork(workInProgress) {
 }
 
 // ============= Commit =============
+function commitDeletions(workInProgress, parentNode) {
+  if (workInProgress.stateNode) {
+    parentNode.removeChild(workInProgress.stateNode);
+  } else {
+    // Find child's DOM node
+    commitDeletions(workInProgress.child, parentNode);
+  }
+}
+
 function commitWorker(workInProgress) {
   if (!workInProgress) {
     return;
@@ -248,6 +259,7 @@ function commitWorker(workInProgress) {
     );
   } else if (workInProgress.flags & Deletion && workInProgress.stateNode) {
     // Delete
+    commitDeletions(workInProgress, parentNode);
   }
 
   // step 2: commit child
@@ -257,6 +269,7 @@ function commitWorker(workInProgress) {
 }
 
 function commitRoot() {
+  w.deletions.forEach(commitWorker);
   commitWorker(w.wipRoot.child);
   w.currentRoot = w.wipRoot;
   w.wipRoot = null;
@@ -291,6 +304,7 @@ function render(vnode, container) {
   };
 
   w.nextUnitOfWork = w.wipRoot;
+  w.deletions = [];
 }
 
 export default { render };

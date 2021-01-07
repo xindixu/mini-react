@@ -9,10 +9,11 @@ const Frc = ({ name }) => {
     <div className="border-red">
       <h2>functional component</h2>
       <p>{name}</p>
-      <button type="button" onClick={() => setCount(count + 10)}>
+      <button type="button" onClick={() => setCount(count + 1)}>
         Add
       </button>
       <p>{count}</p>
+      {count % 2 === 0 ? <p>Even</p> : <h2>Odd</h2>}
     </div>
   );
 };

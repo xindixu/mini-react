@@ -20,7 +20,6 @@ export function useState(init) {
 
   const setState = (action) => {
     hook.queue.push(action);
-    console.log("action", action);
     w.wipRoot = {
       stateNode: w.currentRoot.stateNode,
       props: w.currentRoot.props,
