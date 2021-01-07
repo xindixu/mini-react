@@ -1,15 +1,21 @@
-import { Component } from "./x-react";
+import { Component, useState } from "./x-react";
 import ReactDOM from "./x-react-dom";
 
 import "./index.css";
 
-const Frc = ({ name }) => (
-  <div className="border-red">
-    <h2>functional component</h2>
-    <p>{name}</p>
-  </div>
-);
-
+const Frc = ({ name }) => {
+  const [count, setCount] = useState(0);
+  return (
+    <div className="border-red">
+      <h2>functional component</h2>
+      <p>{name}</p>
+      <button type="button" onClick={() => setCount(count + 1)}>
+        Add
+      </button>
+      <p>{count}</p>
+    </div>
+  );
+};
 // eslint-disable-next-line react/prefer-stateless-function
 class Crc extends Component {
   render() {

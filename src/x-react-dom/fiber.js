@@ -1,4 +1,6 @@
+/* eslint-disable no-bitwise */
 import { isStringOrNumber, isClass } from "./utils";
+import { Deletion, Placement, Update } from "./const";
 
 // Initial render phase
 
@@ -15,10 +17,11 @@ import { isStringOrNumber, isClass } from "./utils";
  */
 
 let wipRoot = null; // fiber | null
+let currentRoot = null; // fiber | null
 // next task that need to update (fiber)
 let nextUnitOfWork = null; // fiber | null
 
-function reconcileChildren(workInProgress, children) {
+function reconcileChildren(returnFiber, children) {
   // Filter out text node and process in `updateNodeAttributes`
   if (isStringOrNumber(children)) {
     return;
@@ -26,21 +29,46 @@ function reconcileChildren(workInProgress, children) {
 
   const newChildren = Array.isArray(children) ? children : [children];
 
+  // alternate - old fiber,
+  let oldFiber = returnFiber.alternate?.child;
   let previousNewFiber = null;
   // Process children in order
   newChildren.forEach((child, index) => {
-    // Create fiber
-    const newFiber = {
-      type: child.type,
-      props: { ...child.props },
-      child: null, // fiber | null
-      sibling: null, // fiber | null
-      return: workInProgress, // fiber | null
-      stateNode: null, // DOM node for host tags
-    };
+    const same =
+      child &&
+      oldFiber &&
+      child.type === oldFiber.type &&
+      child.key === oldFiber.key;
+
+    let newFiber;
+    if (same) {
+      // Update
+    }
+    if (!same && child) {
+      // Create
+      newFiber = {
+        key: null,
+        type: child.type,
+        props: { ...child.props },
+        child: null, // fiber | null
+        sibling: null, // fiber | null
+        return: returnFiber, // fiber | null
+        stateNode: null, // DOM node for host tags,
+        alternate: null, // last old fiber
+        flags: Placement,
+      };
+    }
+
+    if (!same && oldFiber) {
+      // Delete
+    }
+
+    if (oldFiber) {
+      oldFiber = oldFiber.sibling;
+    }
 
     if (index === 0) {
-      workInProgress.child = newFiber;
+      returnFiber.child = newFiber;
     } else {
       previousNewFiber.sibling = newFiber;
     }
@@ -59,6 +87,9 @@ function updateNodeAttributes(node, attrs) {
         if (isStringOrNumber(attrs[k])) {
           node.textContent = `${attrs[k]}`;
         }
+      } else if (k.slice(0, 2) === "on") {
+        const eventName = k.slice(2).toLocaleLowerCase();
+        node.addEventListener(eventName, attrs[k]);
       } else {
         node[k] = attrs[k];
       }
@@ -164,15 +195,20 @@ function commitWorker(workInProgress) {
   // step 1: commit itself
 
   // Find parent's DOM node:
-  // Not all fiber has a DOM node, i.e. Provider, Consumer, Fragment, etc.
+  // ! Not all fiber has a DOM node, i.e. Provider, Consumer, Fragment, etc.
   let parentNodeFiber = workInProgress.return;
   while (!parentNodeFiber.stateNode) {
     parentNodeFiber = parentNodeFiber.return;
   }
   const parentNode = parentNodeFiber.stateNode;
 
-  if (workInProgress.stateNode) {
+  if (workInProgress.flags & Placement && workInProgress.stateNode) {
+    // Insert
     parentNode.appendChild(workInProgress.stateNode);
+  } else if (workInProgress.flags & Update && workInProgress.stateNode) {
+    // Update
+  } else if (workInProgress.flags & Deletion && workInProgress.stateNode) {
+    // Delete
   }
 
   // step 2: commit child
@@ -183,6 +219,7 @@ function commitWorker(workInProgress) {
 
 function commitRoot() {
   commitWorker(wipRoot.child);
+  currentRoot = wipRoot;
   wipRoot = null;
 }
 
