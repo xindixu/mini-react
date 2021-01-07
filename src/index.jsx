@@ -13,7 +13,17 @@ const Frc = ({ name }) => {
         Add
       </button>
       <p>{count}</p>
-      {count % 2 === 0 ? <p>Even</p> : <h2>Odd</h2>}
+      {count % 2 === 0 ? (
+        <p>
+          <strong>Even: </strong>
+          <span>a number that can be divided by 2</span>
+        </p>
+      ) : (
+        <h2>
+          <strong>Odd: </strong>
+          <span>a number that can't be divided by 2</span>
+        </h2>
+      )}
     </div>
   );
 };

@@ -260,6 +260,7 @@ function commitWorker(workInProgress) {
   } else if (workInProgress.flags & Deletion && workInProgress.stateNode) {
     // Delete
     commitDeletions(workInProgress, parentNode);
+    w.deletions = [];
   }
 
   // step 2: commit child
